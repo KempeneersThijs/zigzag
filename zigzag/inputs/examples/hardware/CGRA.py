@@ -12,7 +12,9 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
     """Memory hierarchy variables"""
     """ size=#bit, bw=(read bw, write bw), cost=(read word energy, write work energy) """
 
-    reg_W_128B = MemoryInstance(
+    ## Tile registers
+
+    tile_register_128B = MemoryInstance(
         name="rf_128B",
         size=8,
         r_bw=8,
@@ -26,47 +28,19 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
         latency=1,
     )
 
-    reg_O_2B = MemoryInstance(
-        name="rf_2B",
-        size=16,
-        r_bw=16,
-        w_bw=16,
-        r_cost=0.021,
-        w_cost=0.021,
-        area=0,
-        r_port=2,
-        w_port=2,
-        rw_port=0,
-        latency=1,
-    )
-
-    reg_I_4B = MemoryInstance(
-        name="rf_4B",
-        size=32,
-        r_bw=32,
-        w_bw=32,
-        r_cost=0.021,
-        w_cost=0.021,
-        area=0,
-        r_port=2,
-        w_port=2,
-        rw_port=0,
-        latency=1,
-    )
-
-    ##################################### on-chip memory hierarchy building blocks #####################################
+    ## Input buffers
 
     # sram_32KB_512_1r_1w = \
     #     MemoryInstance(name="sram_32KB", size=32768 * 8, r_bw=512, w_bw=512, r_cost=22.9, w_cost=52.01, area=0,
     #                    r_port=1, w_port=1, rw_port=0, latency=1, min_r_granularity=64, min_w_granularity=64)
 
-    sram_2M_with_16_128K_bank_128_1r_1w = MemoryInstance(
-        name="sram_2MB",
-        size=131072 * 16 * 8,
-        r_bw=128 * 16,
-        w_bw=128 * 16,
-        r_cost=26.01 * 16,
-        w_cost=23.65 * 16,
+    scratchpad_buffer_4KB = MemoryInstance(
+        name="scratchpad_4KB",
+        size=1024 * 8 * 4,
+        r_bw=128 * 4,
+        w_bw=128 * 4,
+        r_cost=26.01 * 4,
+        w_cost=23.65 * 4,
         area=0,
         r_port=1,
         w_port=1,
@@ -77,6 +51,8 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
     )
 
     #######################################################################################################################
+
+    # Host Memory
 
     dram = MemoryInstance(
         name="dram",
@@ -101,33 +77,52 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
     tl: to low = rd_out_to_low
     """
     memory_hierarchy_graph.add_memory(
-        memory_instance=reg_W_128B,
+        memory_instance=tile_register_128B,
         operands=("I2",),
         port_alloc=({"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},),
         served_dimensions={(0, 0)},
     )
-    
-    memory_hierarchy_graph.add_memory(
-        memory_instance=reg_O_2B,
-        operands=("O",),
-        port_alloc=(
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_2", "th": "r_port_2"},
-        ),
-        served_dimensions={(0, 1)},
-    )
-    
+
     ##################################### on-chip highest memory hierarchy initialization #####################################
     
     memory_hierarchy_graph.add_memory(
-        memory_instance=sram_2M_with_16_128K_bank_128_1r_1w,
-        operands=("I1", "O"),
+        memory_instance=scratchpad_buffer_4KB,
+        operands=("I1", "I2"),
         port_alloc=(
             {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_1", "th": "r_port_1"},
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
         ),
         served_dimensions="all",
     )
     
+    memory_hierarchy_graph.add_memory(
+        memory_instance=scratchpad_buffer_4KB,
+        operands=("I1", "I2"),
+        port_alloc=(
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+        ),
+        served_dimensions="all",
+    )
+
+    memory_hierarchy_graph.add_memory(
+        memory_instance=scratchpad_buffer_4KB,
+        operands=("I1", "I2"),
+        port_alloc=(
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+        ),
+        served_dimensions="all",
+    )
+
+    memory_hierarchy_graph.add_memory(
+        memory_instance=scratchpad_buffer_4KB,
+        operands=("O"),
+        port_alloc=(
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_1", "th": "r_port_1"},
+        ),
+        served_dimensions="all",
+    )
     ####################################################################################################################
     
     memory_hierarchy_graph.add_memory(
@@ -159,7 +154,7 @@ def multiplier_array_dut():
     multiplier_input_precision = [8, 8]
     multiplier_energy = 0.04
     multiplier_area = 1
-    dimensions = {"D1": 32, "D2": 32}  # {'D1': ('K', 32), 'D2': ('C', 32)}
+    dimensions = {"D1": 4} 
 
     multiplier = Multiplier(
         multiplier_input_precision, multiplier_energy, multiplier_area

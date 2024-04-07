@@ -310,10 +310,10 @@ def get_hardware_performance_zigzag_with_mix_spatial_mapping(
     return cmes[0][0].energy_total, cmes[0][0].latency_total2, cmes
 
 if __name__ == "__main__":
-    workload = "zigzag/inputs/examples/workload/mobilenetv2.onnx"
+    workload = "zigzag.inputs.examples.workload.matmul"
     # workload = 'inputs.examples.workload.resnet18'
-    accelerator = "zigzag.inputs.examples.hardware.TPU_like"
-    mapping = "zigzag.inputs.examples.mapping.tpu_like"
+    accelerator = "zigzag.inputs.examples.hardware.CGRA"
+    mapping = "zigzag.inputs.examples.mapping.cgra"
 
     hw_name = accelerator.split(".")[-1]
     wl_name = re.split(r"/|\.", workload)[-1]
@@ -322,12 +322,11 @@ if __name__ == "__main__":
     experiment_id = f"{hw_name}-{wl_name}"
     pkl_name = f"{experiment_id}-saved_list_of_cmes"
 
-    answer = get_hardware_performance_zigzag_pe_array_scaling(
+    answer = get_hardware_performance_zigzag(
         workload,
         accelerator,
         mapping,
-        pe_array_scaling=2,
-        opt="EDP",
+        opt="latency",
         dump_filename_pattern=f"outputs/{experiment_id}-layer_?.json",
         pickle_filename=f"outputs/{pkl_name}.pickle",
     )
