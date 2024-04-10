@@ -259,6 +259,6 @@ def bar_plot_cost_model_evaluations_breakdown(
 if __name__ == "__main__":
     import pickle
 
-    with open("../list_of_cmes.pickle", "rb") as handle:
+    with open("outputs/CGRA-matmul-saved_list_of_cmes.pickle", "rb") as handle:
         list_of_cme = pickle.load(handle)
-    bar_plot_cost_model_evaluations_breakdown(list_of_cme, "plot.png")
+    bar_plot_cost_model_evaluations_breakdown(list_of_cme, "plot_16b.png")

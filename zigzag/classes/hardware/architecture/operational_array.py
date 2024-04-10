@@ -39,6 +39,8 @@ class OperationalArray:
 class MultiplierArray(OperationalArray):
     pass
 
+class FunctionalUnitArray(OperationalArray):
+    pass
 
 def multiplier_array_example1():
     """Multiplier array variables"""

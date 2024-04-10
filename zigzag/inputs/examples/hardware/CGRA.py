@@ -1,14 +1,14 @@
 import os
 from zigzag.classes.hardware.architecture.memory_hierarchy import MemoryHierarchy
 from zigzag.classes.hardware.architecture.memory_level import MemoryLevel
-from zigzag.classes.hardware.architecture.operational_unit import Multiplier
-from zigzag.classes.hardware.architecture.operational_array import MultiplierArray
+from zigzag.classes.hardware.architecture.operational_unit import FunctionalUnit
+from zigzag.classes.hardware.architecture.operational_array import FunctionalUnitArray
 from zigzag.classes.hardware.architecture.memory_instance import MemoryInstance
 from zigzag.classes.hardware.architecture.accelerator import Accelerator
 from zigzag.classes.hardware.architecture.core import Core
 
 
-def memory_hierarchy_dut(multiplier_array, visualize=False):
+def memory_hierarchy_dut(functional_unit_array, visualize=False):
     """Memory hierarchy variables"""
     """ size=#bit, bw=(read bw, write bw), cost=(read word energy, write work energy) """
 
@@ -16,7 +16,7 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
 
     tile_register_128B = MemoryInstance(
         name="rf_128B",
-        size=8,
+        size=16,
         r_bw=8,
         w_bw=8,
         r_cost=0.095,
@@ -68,7 +68,7 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
         latency=1,
     )
 
-    memory_hierarchy_graph = MemoryHierarchy(operational_array=multiplier_array)
+    memory_hierarchy_graph = MemoryHierarchy(operational_array=functional_unit_array)
 
     """
     fh: from high = wr_in_by_high 
@@ -149,26 +149,27 @@ def memory_hierarchy_dut(multiplier_array, visualize=False):
     return memory_hierarchy_graph
 
 
-def multiplier_array_dut():
-    """Multiplier array variables"""
-    multiplier_input_precision = [8, 8]
-    multiplier_energy = 0.04
-    multiplier_area = 1
+def functional_unit_array_dut():
+    """functional_unit array variables"""
+    functional_unit_input_precision = [8, 8]
+    functional_unit_energy = 0.04
+    functional_unit_area = 1
+    functional_unit_type = "multiplier"
     dimensions = {"D1": 4} 
 
-    multiplier = Multiplier(
-        multiplier_input_precision, multiplier_energy, multiplier_area
+    functional_unit = FunctionalUnit(
+        functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type
     )
-    multiplier_array = MultiplierArray(multiplier, dimensions)
+    functional_unit_array = FunctionalUnitArray(functional_unit, dimensions)
 
-    return multiplier_array
+    return functional_unit_array
 
 
 def cores_dut():
-    multiplier_array1 = multiplier_array_dut()
-    memory_hierarchy1 = memory_hierarchy_dut(multiplier_array1)
+    functional_unit_array1 = functional_unit_array_dut()
+    memory_hierarchy1 = memory_hierarchy_dut(functional_unit_array1)
 
-    core1 = Core(1, multiplier_array1, memory_hierarchy1)
+    core1 = Core(1, functional_unit_array1, memory_hierarchy1)
 
     return {core1}
 

@@ -45,3 +45,21 @@ class Multiplier(OperationalUnit):
     def __init__(self, input_precision: List[int], energy_cost: float, area: float):
         output_precision = sum(input_precision)
         super().__init__(input_precision, output_precision, energy_cost, area)
+
+
+class FunctionalUnit(OperationalUnit):
+
+    ## The class constructor
+    # @param input_precision: The bit precision of the Functional unit's inputs.
+    # @param energy_cost: The energy cost of performing a single operation on the functional unit.
+    # @param area: The area of a single functional unit.
+    def __init__(self, input_precision: List[int], energy_cost: float, area: float, type: str):
+        output_precision = self.get_output_precision(input_precision, type)
+        super().__init__(input_precision, output_precision, energy_cost, area)
+    
+    def get_output_precision(self, input_precision, type):
+        if type == "multiplier":
+            output_precision = sum(input_precision)
+        else:
+            raise ValueError("Given functional unit type is non existent or currently not supported. Try using multiplier.")
+        return output_precision
