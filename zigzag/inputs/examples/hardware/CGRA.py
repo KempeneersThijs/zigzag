@@ -28,14 +28,30 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
         latency=1,
     )
 
-    ## Input buffers
+    ## Input and output buffer
 
     # sram_32KB_512_1r_1w = \
     #     MemoryInstance(name="sram_32KB", size=32768 * 8, r_bw=512, w_bw=512, r_cost=22.9, w_cost=52.01, area=0,
     #                    r_port=1, w_port=1, rw_port=0, latency=1, min_r_granularity=64, min_w_granularity=64)
 
-    scratchpad_buffer_4KB = MemoryInstance(
-        name="scratchpad_4KB",
+    scratchpad_buffer_4KB_input = MemoryInstance(
+        name="scratchpad_4KB_input",
+        size=1024 * 8 * 4,
+        r_bw=128 * 4,
+        w_bw=128 * 4,
+        r_cost=26.01 * 4,
+        w_cost=23.65 * 4,
+        area=0,
+        r_port=1,
+        w_port=1,
+        rw_port=0,
+        latency=1,
+        min_r_granularity=64,
+        min_w_granularity=64,
+    )
+    
+    scratchpad_buffer_4KB_output = MemoryInstance(
+        name="scratchpad_4KB_output",
         size=1024 * 8 * 4,
         r_bw=128 * 4,
         w_bw=128 * 4,
@@ -86,7 +102,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     ##################################### on-chip highest memory hierarchy initialization #####################################
     
     memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB,
+        memory_instance=scratchpad_buffer_4KB_input,
         operands=("I1", "I2"),
         port_alloc=(
             {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
@@ -96,7 +112,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     )
 
     memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB,
+        memory_instance=scratchpad_buffer_4KB_output,
         operands=("O"),
         port_alloc=(
             {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_1", "th": "r_port_1"},

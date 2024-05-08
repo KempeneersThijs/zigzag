@@ -86,7 +86,7 @@ def print_mapping(cme, OFFSETS=2):
 if __name__ == "__main__":
     # Example usage
     import pickle
-    with open("zigzag/visualization/list_of_cmes.pickle", "rb") as fp:
+    with open("outputs/CGRA-matmul-saved_list_of_cmes.pickle", "rb") as fp:
         cmes = pickle.load(fp)
     cme = cmes[0]
     print_mapping(cme)
