@@ -4,8 +4,8 @@ workload = {
     "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
     "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
     "loop_dim_size": {
-        "B": 1,
-        "K": 16,
+        "B": 32,
+        "K": 32,
         "C": 32,
         "OY": 1,
         "OX": 1,

@@ -94,26 +94,6 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
         ),
         served_dimensions="all",
     )
-    
-    memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB,
-        operands=("I1", "I2"),
-        port_alloc=(
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
-        ),
-        served_dimensions="all",
-    )
-
-    memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB,
-        operands=("I1", "I2"),
-        port_alloc=(
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
-            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
-        ),
-        served_dimensions="all",
-    )
 
     memory_hierarchy_graph.add_memory(
         memory_instance=scratchpad_buffer_4KB,
@@ -155,7 +135,7 @@ def functional_unit_array_dut():
     functional_unit_energy = 0.04
     functional_unit_area = 1
     functional_unit_type = "multiplier"
-    dimensions = {"D1": 4} 
+    dimensions = {"D1": 4, "D2": 4}
 
     functional_unit = FunctionalUnit(
         functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type
