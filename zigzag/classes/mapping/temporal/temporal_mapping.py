@@ -50,7 +50,10 @@ class TemporalMapping:
         # Initialization
         mapping_current = pickle_deepcopy(self.mapping_dic_origin)
         mapping_previous = pickle_deepcopy(self.mapping_dic_origin)
+        systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-1
+
         done = False
+        empty_level = {op: False for op in self.operand_list}
 
         while not done:
             mapping_st = {
@@ -63,40 +66,56 @@ class TemporalMapping:
                         mapping_st[operand][level] = pickle_deepcopy(
                             current_level_loops
                         )
+                        empty_level[operand] = True
                     else:
                         for loop_type, loop_dim in current_level_loops:
-#                            if (                                                       for systolic operation: consider simple situation where the elements
-#                                loop_type                                              in the bottom memory level stay there, untill everything needs to be
-#                                in self.layer_node.operand_loop_dim[operand]["ir"]     refreshed, then refresh everything at once. So every element is stationary
-#                            ):                                                         untill all elements have been used in the bottom level (not only the ir loops).
-
-                            systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-1
-                            if level == 0:
-                                MAC_level_st[operand] *= loop_dim
-                                mapping_st[operand][level].append(
-                                    (loop_type, loop_dim)
-                                )
-                                mapping_current[operand][level].remove(
-                                    (loop_type, loop_dim)
-                                )
+                            if (
+                                loop_type
+                                in self.layer_node.operand_loop_dim[operand]["ir"]
+                            ):
+                                if level == 0:
+                                    MAC_level_st[operand] *= loop_dim
+                                    mapping_st[operand][level].append(
+                                        (loop_type, loop_dim)
+                                    )
+                                    mapping_current[operand][level].remove(
+                                        (loop_type, loop_dim)
+                                    )
+                                else:
+                                    mapping_st[operand][level - 1].append(
+                                        (loop_type, loop_dim)
+                                    )
+                                    mapping_current[operand][level].remove(
+                                        (loop_type, loop_dim)
+                                    )
                             else:
-                                if(
-                                    loop_type                                           #EXAMPLE: for C in [0,2)                    MEMORY LEVEL 1
-                                    in self.layer_node.operand_loop_dim[operand]["ir"]  #           for K in [0,4)        <---   only if this loop is irrelevant to the operand, stored in the memory level below,
-                                    and                                                 #                                        are the elements of that operand stationary in the level below
-                                    (loop_type, loop_dim) == current_level_loops[0]     #-------------------------------------------
-                                ):                                                      #             for B in [0,2)                 MEMORY LEVEL 0
-                                    mapping_st[operand][level - 1].append(              #               for B in [0,2)
-                                        (loop_type, loop_dim + systolic_cycles)         #                   parfor ...
-                                    )                                                   #
-                                mapping_current[operand][level].remove(
-                                    (loop_type, loop_dim)
+                                mapping_st[operand][level].extend(
+                                    mapping_current[operand][level]
                                 )
-                        else:
-                            mapping_st[operand][level].extend(
-                                mapping_current[operand][level]
-                            )
-                            break
+                                break
+                        
+                        if level == 0:          #add the systolic cycles to the bottom level stationary cycles, after all the irrelevant loops of the bottom level have been added
+                            MAC_level_st[operand] += systolic_cycles       
+                            bottom_loop_cycles = mapping_st[operand][level][0][1]
+                            systolic_bottom_loop = (mapping_st[operand][level][0][0], bottom_loop_cycles + systolic_cycles)
+                            mapping_st[operand][level][0] = systolic_bottom_loop
+                            mapping_previous[operand][level][0] = systolic_bottom_loop
+                        elif empty_level[operand] == True:   #if the bottom memory level(s) for an operand is(/are) unused..
+                            if (
+                                loop_type
+                                in self.layer_node.operand_loop_dim[operand]["ir"]
+                            ):
+                                bottom_loop_cycles = mapping_st[operand][level-1][0][1]
+                                systolic_bottom_loop = (mapping_st[operand][level-1][0][0], bottom_loop_cycles + systolic_cycles)
+                                mapping_st[operand][level-1][0] = systolic_bottom_loop
+                                mapping_previous[operand][level][0] = systolic_bottom_loop
+                            else:
+                                bottom_loop_cycles = mapping_st[operand][level][0][1]
+                                systolic_bottom_loop = (mapping_st[operand][level][0][0], bottom_loop_cycles + systolic_cycles)
+                                mapping_st[operand][level][0] = systolic_bottom_loop
+                                mapping_previous[operand][level][0] = systolic_bottom_loop
+                            empty_level[operand] = False
+                                
             if mapping_st != mapping_previous:
                 mapping_previous = pickle_deepcopy(mapping_st)
                 mapping_current = pickle_deepcopy(mapping_st)
@@ -130,6 +149,7 @@ class TemporalMapping:
 
         # ASSERT: The total cycle count must be the same for all operand
         total_cycle = [cycle_cabl_level[op][-1] for op in self.operand_list]
+        print(total_cycle)
         assert all(
             x == total_cycle[0] for x in total_cycle
         ), f"The total cycle count is not the same for all operand {total_cycle}, please correct the temporal mapping."
