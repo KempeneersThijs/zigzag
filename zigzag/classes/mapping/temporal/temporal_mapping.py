@@ -1,5 +1,6 @@
 from typing import Dict
 from math import prod
+from zigzag.classes.hardware.architecture.accelerator import Accelerator
 from zigzag.classes.workload.layer_node import LayerNode
 from zigzag.utils import pickle_deepcopy
 
@@ -9,10 +10,11 @@ class TemporalMapping:
     ## The class constructor
     # @param temporal_mapping_dict
     # @param layer_node
-    def __init__(self, temporal_mapping_dict: Dict, layer_node: LayerNode):
+    def __init__(self, temporal_mapping_dict: Dict, layer_node: LayerNode, accelerator):
         self.mapping_dic_origin = temporal_mapping_dict
         self.layer_node = layer_node
         self.operand_list = layer_node.operand_list
+        self.accelerator = accelerator
 
         # Extract memory hierarchy level count for each operand from temporal mapping definition
         self.mem_level = {op: len(tmap) for (op, tmap) in temporal_mapping_dict.items()}
@@ -63,30 +65,38 @@ class TemporalMapping:
                         )
                     else:
                         for loop_type, loop_dim in current_level_loops:
-                            if (
-                                loop_type
-                                in self.layer_node.operand_loop_dim[operand]["ir"]
-                            ):
-                                if level == 0:
-                                    MAC_level_st[operand] *= loop_dim
-                                    mapping_st[operand][level].append(
-                                        (loop_type, loop_dim)
-                                    )
-                                    mapping_current[operand][level].remove(
-                                        (loop_type, loop_dim)
-                                    )
-                                else:
-                                    mapping_st[operand][level - 1].append(
-                                        (loop_type, loop_dim)
-                                    )
-                                    mapping_current[operand][level].remove(
-                                        (loop_type, loop_dim)
-                                    )
-                            else:
-                                mapping_st[operand][level].extend(
-                                    mapping_current[operand][level]
+#                            if (                                                       for systolic operation: consider simple situation where the elements
+#                                loop_type                                              in the bottom memory level stay there, untill everything needs to be
+#                                in self.layer_node.operand_loop_dim[operand]["ir"]     refreshed, then refresh everything at once. So every element is stationary
+#                            ):                                                         untill all elements have been used in the bottom level (not only the ir loops).
+
+                            systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-1
+                            if level == 0:
+                                MAC_level_st[operand] *= loop_dim
+                                mapping_st[operand][level].append(
+                                    (loop_type, loop_dim)
                                 )
-                                break
+                                mapping_current[operand][level].remove(
+                                    (loop_type, loop_dim)
+                                )
+                            else:
+                                if(
+                                    loop_type                                           #EXAMPLE: for C in [0,2)                    MEMORY LEVEL 1
+                                    in self.layer_node.operand_loop_dim[operand]["ir"]  #           for K in [0,4)        <---   only if this loop is irrelevant to the operand, stored in the memory level below,
+                                    and                                                 #                                        are the elements of that operand stationary in the level below
+                                    (loop_type, loop_dim) == current_level_loops[0]     #-------------------------------------------
+                                ):                                                      #             for B in [0,2)                 MEMORY LEVEL 0
+                                    mapping_st[operand][level - 1].append(              #               for B in [0,2)
+                                        (loop_type, loop_dim + systolic_cycles)         #                   parfor ...
+                                    )                                                   #
+                                mapping_current[operand][level].remove(
+                                    (loop_type, loop_dim)
+                                )
+                        else:
+                            mapping_st[operand][level].extend(
+                                mapping_current[operand][level]
+                            )
+                            break
             if mapping_st != mapping_previous:
                 mapping_previous = pickle_deepcopy(mapping_st)
                 mapping_current = pickle_deepcopy(mapping_st)
