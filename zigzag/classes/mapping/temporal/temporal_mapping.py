@@ -50,7 +50,8 @@ class TemporalMapping:
         # Initialization
         mapping_current = pickle_deepcopy(self.mapping_dic_origin)
         mapping_previous = pickle_deepcopy(self.mapping_dic_origin)
-        systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-1
+        systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-2
+        done = False
 
         self.systolic_cycles = systolic_cycles
         while not done:
@@ -64,7 +65,6 @@ class TemporalMapping:
                         mapping_st[operand][level] = pickle_deepcopy(
                             current_level_loops
                         )
-                        empty_level[operand] = True
                     else:
                         for loop_type, loop_dim in current_level_loops:
                             if (
@@ -103,7 +103,6 @@ class TemporalMapping:
                 done = True
 
         self.mapping_dic_stationary = mapping_st
-        self.mapping_dic_stationary_cycles = mapping_st_cycles
         self.MAC_level_data_stationary_cycle = MAC_level_st
 
     ## Calculate the iteration cycles that each memory level covers
