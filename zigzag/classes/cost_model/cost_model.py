@@ -826,6 +826,9 @@ class CostModelEvaluation:
                 data_trans_amount = self.mapping_int.unit_mem_data_movement[layer_op][
                     mem_lv
                 ].data_trans_amount_per_period.rd_out_to_low
+#                if mem_lv == 1 and mem_op == "I2":
+#                    mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]/(self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0])
+#                else:
                 mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]
                 rd_out_to_low_real = ceil(data_trans_amount * data_precision / mem_bw)
 
@@ -846,6 +849,9 @@ class CostModelEvaluation:
                 data_trans_amount = self.mapping_int.unit_mem_data_movement[layer_op][
                     mem_lv
                 ].data_trans_amount_per_period.wr_in_by_high
+#                if mem_lv == 0 and mem_op == "I2":
+#                    mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]
+#                else:
                 mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]
                 wr_in_by_high_real = ceil(data_trans_amount * data_precision / mem_bw)
 
@@ -985,6 +991,8 @@ class CostModelEvaluation:
                         # skip for the inactive data movement
                         continue
                     if mem_op in ["I1", "I2"]:
+                        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",4),("B",8)]:
+                            i = 3
                         real_cycle = getattr(
                             self.real_data_trans_cycle[layer_op][mem_lv], mov_dir
                         )
@@ -999,6 +1007,10 @@ class CostModelEvaluation:
                             ].data_precision,
                             mov_dir,
                         )
+#                        if mov_dir == "wr_in_by_high" and mem_lv == 0 and not port_is_shared_by_two_input_operands:
+#                            mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]/self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0]
+#                        elif mov_dir == "rd_out_to_low" and mem_lv == 1 and not port_is_shared_by_two_input_operands:
+#                            mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]/self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0]
                         if mov_dir[:2] == "rd":
                             mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]
                         else:
