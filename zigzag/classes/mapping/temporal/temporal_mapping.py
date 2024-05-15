@@ -10,11 +10,11 @@ class TemporalMapping:
     ## The class constructor
     # @param temporal_mapping_dict
     # @param layer_node
-    def __init__(self, temporal_mapping_dict: Dict, layer_node: LayerNode, accelerator):
+    def __init__(self, temporal_mapping_dict: Dict, layer_node: LayerNode, spatial_mapping):
         self.mapping_dic_origin = temporal_mapping_dict
         self.layer_node = layer_node
         self.operand_list = layer_node.operand_list
-        self.accelerator = accelerator
+        self.spatial_mapping = spatial_mapping
 
         # Extract memory hierarchy level count for each operand from temporal mapping definition
         self.mem_level = {op: len(tmap) for (op, tmap) in temporal_mapping_dict.items()}
@@ -50,7 +50,7 @@ class TemporalMapping:
         # Initialization
         mapping_current = pickle_deepcopy(self.mapping_dic_origin)
         mapping_previous = pickle_deepcopy(self.mapping_dic_origin)
-        systolic_cycles = sum(self.accelerator.get_core(self.layer_node.core_allocation).operational_array.dimension_sizes)-2
+        systolic_cycles = sum(int(loops[1]) for loops in self.spatial_mapping.spatial_loop_dim_size)-2
         done = False
 
         self.systolic_cycles = systolic_cycles

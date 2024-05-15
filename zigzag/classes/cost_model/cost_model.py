@@ -756,12 +756,14 @@ class CostModelEvaluation:
     def calc_allowed_and_real_data_transfer_cycle_per_DTL(self):
         allowed_mem_updat_cycle = {}
         real_data_trans_cycle = {}
+        real_data_trans_cycle_onloading = {}
         """ stall (+) or slack (-) cycle within each period per virtual data transfer link (DTL) """
         DTL_SS_cycle = {}
 
         for layer_op in self.layer.operand_list:
             allowed_mem_updat_cycle[layer_op] = []
             real_data_trans_cycle[layer_op] = []
+            real_data_trans_cycle_onloading[layer_op] = []
             DTL_SS_cycle[layer_op] = []
             mem_op = self.layer_op_to_mem_op[layer_op]
             for mem_lv in range(self.mapping_int.mem_level[layer_op]):
@@ -826,9 +828,6 @@ class CostModelEvaluation:
                 data_trans_amount = self.mapping_int.unit_mem_data_movement[layer_op][
                     mem_lv
                 ].data_trans_amount_per_period.rd_out_to_low
-#                if mem_lv == 1 and mem_op == "I2":
-#                    mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]/(self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0])
-#                else:
                 mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]
                 rd_out_to_low_real = ceil(data_trans_amount * data_precision / mem_bw)
 
@@ -849,12 +848,16 @@ class CostModelEvaluation:
                 data_trans_amount = self.mapping_int.unit_mem_data_movement[layer_op][
                     mem_lv
                 ].data_trans_amount_per_period.wr_in_by_high
-#                if mem_lv == 0 and mem_op == "I2":
-#                    mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]
-#                else:
                 mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]
                 wr_in_by_high_real = ceil(data_trans_amount * data_precision / mem_bw)
-
+                if mem_lv == 0 and mem_op == "I2":
+                    sp_unrolled_width = self.spatial_mapping_int.spatial_loop_dim_size[0][1]
+                    # if the BW is higher than needed to supply all the weights to the array in 1 cycle, only multiplying by sp_unrolled_width won't
+                    # suffice to model the systolic onloading of weights. That's why the mem_bw is also multiplied by this amount before applying
+                    # the ceil() function.
+                    wr_in_by_high_onloading = ceil(data_trans_amount * data_precision / (mem_bw * sp_unrolled_width)) * sp_unrolled_width
+                else:
+                    wr_in_by_high_onloading = ceil(data_trans_amount * data_precision / mem_bw)
                 """ All """
                 real_data_trans = FourWayDataMoving(
                     rd_out_to_low_real,
@@ -862,11 +865,19 @@ class CostModelEvaluation:
                     rd_out_to_high_real,
                     wr_in_by_high_real,
                 )
+                real_data_trans_onloading = FourWayDataMoving(
+                    rd_out_to_low_real,
+                    wr_in_by_low_real,
+                    rd_out_to_high_real,
+                    wr_in_by_high_onloading,
+                )
                 real_data_trans_cycle[layer_op].append(real_data_trans)
+                real_data_trans_cycle_onloading[layer_op].append(real_data_trans_onloading)
                 """ =========================================real_data_trans_cycle(above)======================================= """
 
         self.allowed_mem_updat_cycle = allowed_mem_updat_cycle
         self.real_data_trans_cycle = real_data_trans_cycle
+        self.real_data_trans_cycle_onloading = real_data_trans_cycle_onloading
 
     ## Consider memory sharing and port sharing, combine the data transfer activity
     # Step 1: collect port activity per memory instance per physical memory port
@@ -991,10 +1002,10 @@ class CostModelEvaluation:
                         # skip for the inactive data movement
                         continue
                     if mem_op in ["I1", "I2"]:
-                        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",4),("B",8)]:
-                            i = 3
+#                        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",4),("B",8)]:
+#                            i = 3
                         real_cycle = getattr(
-                            self.real_data_trans_cycle[layer_op][mem_lv], mov_dir
+                            self.real_data_trans_cycle_onloading[layer_op][mem_lv], mov_dir
                         )
                         data_in_charge = getattr(
                             self.mapping_int.unit_mem_data_movement[layer_op][

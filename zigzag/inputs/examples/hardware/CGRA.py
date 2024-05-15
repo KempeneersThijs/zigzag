@@ -36,9 +36,9 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
 
     scratchpad_buffer_4KB_input = MemoryInstance(
         name="scratchpad_4KB_input",
-        size=512 * 8,
-        r_bw=16*8,
-        w_bw=128*8,
+        size=1024 * 8,
+        r_bw=32*8,
+        w_bw=512*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
         area=0,
@@ -53,7 +53,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     scratchpad_buffer_4KB_output = MemoryInstance(
         name="scratchpad_4KB_output",
         size=1024 * 8 * 4,
-        r_bw=128 * 4,
+        r_bw=512 * 4,
         w_bw=64*32*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
@@ -73,7 +73,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     dram = MemoryInstance(
         name="dram",
         size=10000000000,
-        r_bw=512 * 8,
+        r_bw=128 * 8,
         w_bw=64,
         r_cost=700,
         w_cost=750,
@@ -151,7 +151,7 @@ def functional_unit_array_dut():
     functional_unit_energy = 0.04
     functional_unit_area = 1
     functional_unit_type = "multiplier"
-    dimensions = {"D1": 4, "D2": 4}
+    dimensions = {"D1": 32, "D2": 32}
 
     functional_unit = FunctionalUnit(
         functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type

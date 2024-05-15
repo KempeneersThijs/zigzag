@@ -106,7 +106,7 @@ class MemoryAllocator:
 
         # After all the nodes have been allocated, we can creat the TemporalMapping
         # object from the dictionary we have built
-        temporal_mapping = TemporalMapping(self.temporal_mapping_dict, self.layer, self.accelerator)
+        temporal_mapping = TemporalMapping(self.temporal_mapping_dict, self.layer, self.spatial_mapping)
 
         return temporal_mapping
 
