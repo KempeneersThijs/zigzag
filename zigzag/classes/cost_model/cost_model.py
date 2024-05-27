@@ -852,7 +852,7 @@ class CostModelEvaluation:
                 wr_in_by_high_real = ceil(data_trans_amount * data_precision / mem_bw)
                 if mem_lv == 0 and mem_op == "I2":
                     sp_unrolled_width = self.layer.user_spatial_mapping["D1"][1]
-                    # if the BW is higher than needed to supply all the weights to the array in 1 cycle, only multiplying by sp_unrolled_width won't
+                    # if the BW is lower than needed to supply all the weights to the array in 1 cycle, only multiplying by sp_unrolled_width won't
                     # suffice to model the systolic onloading of weights. That's why the mem_bw is also multiplied by this amount before applying
                     # the ceil() function.
                     wr_in_by_high_onloading = ceil(data_trans_amount * data_precision / (mem_bw * sp_unrolled_width)) * sp_unrolled_width

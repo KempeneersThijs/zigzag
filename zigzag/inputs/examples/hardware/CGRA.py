@@ -14,8 +14,8 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
 
     ## Tile registers
 
-    tile_register_128B = MemoryInstance(
-        name="rf_128B",
+    tile_register_1B = MemoryInstance(
+        name="rf_1B",
         size=8,
         r_bw=8,
         w_bw=8,
@@ -34,11 +34,11 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     #     MemoryInstance(name="sram_32KB", size=32768 * 8, r_bw=512, w_bw=512, r_cost=22.9, w_cost=52.01, area=0,
     #                    r_port=1, w_port=1, rw_port=0, latency=1, min_r_granularity=64, min_w_granularity=64)
 
-    scratchpad_buffer_4KB_input = MemoryInstance(
-        name="scratchpad_4KB_input",
+    scratchpad_buffer_1KB_input = MemoryInstance(
+        name="scratchpad_1KB_input",
         size=1024 * 8,
-        r_bw=16*8,
-        w_bw=128*8,
+        r_bw=9*8,
+        w_bw=432*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
         area=0,
@@ -50,11 +50,11 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
         min_w_granularity=64,
     )
     
-    scratchpad_buffer_4KB_output = MemoryInstance(
-        name="scratchpad_4KB_output",
-        size=1024 * 8 * 4,
-        r_bw=128 * 4,
-        w_bw=64*32*8,
+    scratchpad_buffer_1KB_output = MemoryInstance(
+        name="scratchpad_1KB_output",
+        size=1024 * 8,
+        r_bw=432 * 8,
+        w_bw=9*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
         area=0,
@@ -73,8 +73,8 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     dram = MemoryInstance(
         name="dram",
         size=10000000000,
-        r_bw=256 * 8,
-        w_bw=64,
+        r_bw=432 * 8,
+        w_bw=432*8,
         r_cost=700,
         w_cost=750,
         area=0,
@@ -93,7 +93,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     tl: to low = rd_out_to_low
     """
     memory_hierarchy_graph.add_memory(
-        memory_instance=tile_register_128B,
+        memory_instance=tile_register_1B,
         operands=("I2",),
         port_alloc=({"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},),
         served_dimensions={(0, 0)},
@@ -102,7 +102,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     ##################################### on-chip highest memory hierarchy initialization #####################################
     
     memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB_input,
+        memory_instance=scratchpad_buffer_1KB_input,
         operands=("I1", "I2"),
         port_alloc=(
             {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
@@ -112,7 +112,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     )
 
     memory_hierarchy_graph.add_memory(
-        memory_instance=scratchpad_buffer_4KB_output,
+        memory_instance=scratchpad_buffer_1KB_output,
         operands=("O"),
         port_alloc=(
             {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_1", "th": "r_port_1"},
@@ -151,7 +151,7 @@ def functional_unit_array_dut():
     functional_unit_energy = 0.04
     functional_unit_area = 1
     functional_unit_type = "multiplier"
-    dimensions = {"D1": 32, "D2": 32}
+    dimensions = {"D1": 3, "D2": 3}
 
     functional_unit = FunctionalUnit(
         functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type
