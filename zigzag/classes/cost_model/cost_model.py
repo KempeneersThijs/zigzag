@@ -327,9 +327,10 @@ class CostModelEvaluation:
                     "memory_energy_breakdown_per_level_per_operand": self.mem_energy_breakdown_further,
                 },
                 "latency": {
-                    "data_onloading": self.latency_total1 - self.latency_total0,
-                    "computation": self.latency_total0,
-                    "data_offloading": self.latency_total2 - self.latency_total1,
+                    "data_onloading": self.data_loading_cycle, #self.latency_total1 - self.latency_total0,
+                    "computation": self.mapping_int.temporal_mapping.total_cycle, #self.latency_total0, 
+                    "stall_slack_cycles": self.SS_comb,
+                    "data_offloading": self.data_offloading_cycle #self.latency_total2 - self.latency_total1,
                 },
                 "spatial": {
                     "mac_utilization": {
@@ -874,7 +875,8 @@ class CostModelEvaluation:
                 real_data_trans_cycle[layer_op].append(real_data_trans)
                 real_data_trans_cycle_onloading[layer_op].append(real_data_trans_onloading)
                 """ =========================================real_data_trans_cycle(above)======================================= """
-
+        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
+            i = 3
         self.allowed_mem_updat_cycle = allowed_mem_updat_cycle
         self.real_data_trans_cycle = real_data_trans_cycle
         self.real_data_trans_cycle_onloading = real_data_trans_cycle_onloading
@@ -966,7 +968,8 @@ class CostModelEvaluation:
         self.SS_comb_collect = SS_comb_collect
         # Assuming all the memory ports can work in parallel
         self.SS_comb = max(SS_comb_list)
-
+        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
+            i = 3
     ## Calculate the initial/final data loading/off-loading cycle by separating out
     # the first-time input operands' / the last-time output operand's data movement
     # on corresponding ports.
@@ -1079,6 +1082,8 @@ class CostModelEvaluation:
         self.data_loading_cc_per_op = data_loading_cc_per_op
         self.data_offloading_per_mem_inst = data_offloading_per_mem_inst
         self.data_offloading_per_op = data_offloading_cc_per_op
+        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
+            i = 3
 
         # Combine ports' initial data-loading activities to get the data loading cycle amount
         data_loading_cc_pair_combined_per_op = {
@@ -1132,7 +1137,7 @@ class CostModelEvaluation:
                 + data_loading_individual_part[op1],
                 data_loading_half_shared_part[op2] + data_loading_individual_part[op2],
             )
-            if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",4),("B",8)]:
+            if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
                 i = 3
             data_loading_cycle = min(possible1, possible2)
 
@@ -1180,7 +1185,7 @@ class CostModelEvaluation:
         MAC_utilization0 = ideal_cycle / latency_total0
 
         # Total latency with the initial data loading, but without the final data off-loading
-        latency_total1 = ideal_temporal_cycle + self.SS_comb + self.data_loading_cycle
+        latency_total1 = ideal_temporal_cycle + self.data_loading_cycle + self.SS_comb 
         MAC_utilization1 = ideal_cycle / latency_total1
 
         # Total latency with both the initial data loading and the final data off-loading

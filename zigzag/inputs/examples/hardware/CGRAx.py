@@ -37,8 +37,8 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     scratchpad_buffer_1KB_input = MemoryInstance(
         name="scratchpad_1KB_input",
         size=1024 * 8,
-        r_bw=16*8,
-        w_bw=16*8,
+        r_bw=512*8,
+        w_bw=512*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
         area=0,
@@ -53,8 +53,25 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     scratchpad_buffer_1KB_output = MemoryInstance(
         name="scratchpad_1KB_output",
         size=1024 * 8,
-        r_bw=16 * 8,
-        w_bw=16*8,
+        r_bw=512 * 8,
+        w_bw=512*8,
+        r_cost=26.01 * 4,
+        w_cost=23.65 * 4,
+        area=0,
+        r_port=1,
+        w_port=1,
+        rw_port=0,
+        latency=1,
+        min_r_granularity=64,
+        min_w_granularity=64,
+    )
+
+    # extra level for experiment
+    L2_mem_20KB = MemoryInstance(
+        name="L2_mem_20KB",
+        size=20 * 1024 * 20 * 1024 * 8,
+        r_bw=1024 * 8,
+        w_bw=1024*8,
         r_cost=26.01 * 4,
         w_cost=23.65 * 4,
         area=0,
@@ -71,8 +88,8 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     dram = MemoryInstance(
         name="dram",
         size=10000000000*8,
-        r_bw=16 * 8,
-        w_bw=16*8,
+        r_bw=512 * 8,
+        w_bw=512*8,
         r_cost=700,
         w_cost=750,
         area=0,
@@ -118,6 +135,17 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
         served_dimensions="all",
     )
     memory_hierarchy_graph.add_memory(
+        memory_instance=L2_mem_20KB,
+        operands=("I1", "I2", "O"),
+        port_alloc=(
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": None, "th": None},
+            {"fh": "w_port_1", "tl": "r_port_1", "fl": "w_port_1", "th": "r_port_1"},
+        ),
+        served_dimensions="all",
+    )
+
+    memory_hierarchy_graph.add_memory(
         memory_instance=dram,
         operands=("I1", "I2", "O"),
         port_alloc=(
@@ -147,7 +175,7 @@ def functional_unit_array_dut():
     functional_unit_energy = 0.04
     functional_unit_area = 1
     functional_unit_type = "multiplier"
-    dimensions = {"D1": 2, "D2": 2}
+    dimensions = {"D1": 4, "D2": 4}
 
     functional_unit = FunctionalUnit(
         functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type

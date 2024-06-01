@@ -393,7 +393,7 @@ def get_hardware_performance_zigzag_with_mix_spatial_mapping(
     return cmes[0][0].energy_total, cmes[0][0].latency_total2, cmes
 
 if __name__ == "__main__":
-    workload = "zigzag.inputs.examples.workload.matmul"
+    workload = "zigzag.inputs.examples.workload.matmul2x2"
     # workload = 'inputs.examples.workload.resnet18'
     accelerator = "zigzag.inputs.examples.hardware.CGRA"
     mapping = "zigzag.inputs.examples.mapping.cgra"

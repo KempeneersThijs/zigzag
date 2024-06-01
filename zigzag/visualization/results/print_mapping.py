@@ -1,4 +1,5 @@
 from zigzag.utils import pickle_deepcopy
+import os
 
 
 def get_temporal_spatial_loops(cme):
@@ -76,12 +77,8 @@ def print_mapping(cme, OFFSETS=2):
     operands = list(cme.layer.memory_operand_links.keys())
     print_header("Temporal Loops", operands)
     # Start recursive temporal loops printing
-    temporal_loops = [("K",("0","K0"), ("dram", "dram", "dram")), ("C",("0","C0"),("scratchpad_1KB_output", "scratchpad_1KB_input", "dram")) , ("C",("0","C1"),("scratchpad_1KB_output", "scratchpad_1KB_input", "scratchpad_1KB_input")), ("K",("0","K1"),("scratchpad_1KB_output", "scratchpad_1KB_input", "scratchpad_1KB_input")), ("B",("0","B0"),("scratchpad_1KB_output", "rf_1B", "scratchpad_1KB_input")), ("B",("0","B1"), ("scratchpad_1KB_output", "rf_1B", "scratchpad_1KB_input"))]
-
     indent = recursive_print(temporal_loops, loop_str='for', offset=0, indent=True)
     # Print Spatial loops header
-    operands = ["", "", ""]
-    spatial_loops = [("C",("0","C2"), ("","","")), ("K",("0","K2"),("","",""))]
     print_header("Spatial Loops", operands)
     # Start recursive spatial loops printing
     indent = recursive_print(spatial_loops, loop_str='parfor', offset=indent, indent=False)
@@ -89,7 +86,7 @@ def print_mapping(cme, OFFSETS=2):
 if __name__ == "__main__":
     # Example usage
     import pickle
-    with open("outputs/CGRA-matmul-saved_list_of_cmes.pickle", "rb") as fp:
+    with open("outputs/CGRAx-large_matmul-saved_list_of_cmes.pickle", "rb") as fp:
         cmes = pickle.load(fp)
     cme = cmes[0]
     print_mapping(cme)
