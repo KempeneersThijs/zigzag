@@ -69,7 +69,7 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     # extra level for experiment
     L2_mem_20KB = MemoryInstance(
         name="L2_mem_20KB",
-        size=20 * 1024 * 20 * 1024 * 8,
+        size=1024*1024 * 8,
         r_bw=1024 * 8,
         w_bw=1024*8,
         r_cost=26.01 * 4,
@@ -79,8 +79,6 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
         w_port=1,
         rw_port=0,
         latency=1,
-        min_r_granularity=64,
-        min_w_granularity=64,
     )
 
     # Host Memory
@@ -88,8 +86,8 @@ def memory_hierarchy_dut(functional_unit_array, visualize=False):
     dram = MemoryInstance(
         name="dram",
         size=10000000000*8,
-        r_bw=512 * 8,
-        w_bw=512*8,
+        r_bw=16 * 8,
+        w_bw=16*8,
         r_cost=700,
         w_cost=750,
         area=0,
@@ -175,7 +173,7 @@ def functional_unit_array_dut():
     functional_unit_energy = 0.04
     functional_unit_area = 1
     functional_unit_type = "multiplier"
-    dimensions = {"D1": 4, "D2": 4}
+    dimensions = {"D1": 2, "D2": 2}
 
     functional_unit = FunctionalUnit(
         functional_unit_input_precision, functional_unit_energy, functional_unit_area, functional_unit_type

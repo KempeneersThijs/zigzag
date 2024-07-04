@@ -1,5 +1,6 @@
 from typing import Dict
 from math import prod
+from math import ceil
 from zigzag.classes.hardware.architecture.accelerator import Accelerator
 from zigzag.classes.workload.layer_node import LayerNode
 from zigzag.utils import pickle_deepcopy
@@ -50,7 +51,7 @@ class TemporalMapping:
         # Initialization
         mapping_current = pickle_deepcopy(self.mapping_dic_origin)
         mapping_previous = pickle_deepcopy(self.mapping_dic_origin)
-        systolic_cycles = sum(int(loops[1]) for loops in self.spatial_mapping.spatial_loop_dim_size)-2
+        systolic_cycles = sum(int(loops[1]) for loops in self.spatial_mapping.spatial_loop_dim_size)-1
         done = False
 
         self.systolic_cycles = systolic_cycles
@@ -107,6 +108,9 @@ class TemporalMapping:
 
     ## Calculate the iteration cycles that each memory level covers
     def calc_cycle_cabl_level(self):
+
+#-------------------------------Enhanced systolic cycles-------------------------------------
+
         #count the bottom ir loops for every operand. the count can cross memory levels but only counts the consecutive bottom loops.
         #From the moment a relevant loop is encountered, the count stops.
         mapping_st_flat = {op: [x for xs in self.mapping_dic_stationary[op] for x in xs] for op in self.operand_list}
@@ -118,17 +122,7 @@ class TemporalMapping:
                 else:
                     break
 
-#        iteration_each_level = {
-#            op: [
-#                prod(
-#                    [loop_dim for _, loop_dim in self.mapping_dic_stationary_cycles[op][lv]
-#                )
-#                for lv in range(self.mem_level[op])
-#            ]
-#            for op in self.operand_list
-#        }
-
-#       cycle_per_level count for current and below levels' for-loops
+        #cycle_per_level count for current and below levels' for-loops
         cycle_cabl_level = {op: [] for op in self.operand_list}
         for op in self.operand_list:
             iterations = 1
@@ -140,6 +134,19 @@ class TemporalMapping:
                     if idx == bottom_ir_loops_count: #add the systolic cycles to the product of the bottom most ir loops
                         iterations += self.systolic_cycles
                 cycle_cabl_level[op].append(iterations)
+        
+        
+#--------------------------Original ZigZag cycle calculation---------------------------------
+
+#        iteration_each_level = {
+#            op: [
+#                prod(
+#                    [loop_dim for _, loop_dim in self.mapping_dic_stationary_cycles[op][lv]
+#                )
+#                for lv in range(self.mem_level[op])
+#            ]
+#            for op in self.operand_list
+#        }
 
 #       cycle_per_level count for current and below levels' for-loops
 #        cycle_cabl_level = {

@@ -852,7 +852,7 @@ class CostModelEvaluation:
                 mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]
                 wr_in_by_high_real = ceil(data_trans_amount * data_precision / mem_bw)
                 if mem_lv == 0 and mem_op == "I2":
-                    sp_unrolled_width = self.layer.user_spatial_mapping["D1"][1]
+                    sp_unrolled_width = self.layer.user_spatial_mapping["D1"][1] + 1
                     # if the BW is lower than needed to supply all the weights to the array in 1 cycle, only multiplying by sp_unrolled_width won't
                     # suffice to model the systolic onloading of weights. That's why the mem_bw is also multiplied by this amount before applying
                     # the ceil() function.
@@ -875,8 +875,6 @@ class CostModelEvaluation:
                 real_data_trans_cycle[layer_op].append(real_data_trans)
                 real_data_trans_cycle_onloading[layer_op].append(real_data_trans_onloading)
                 """ =========================================real_data_trans_cycle(above)======================================= """
-        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
-            i = 3
         self.allowed_mem_updat_cycle = allowed_mem_updat_cycle
         self.real_data_trans_cycle = real_data_trans_cycle
         self.real_data_trans_cycle_onloading = real_data_trans_cycle_onloading
@@ -968,8 +966,6 @@ class CostModelEvaluation:
         self.SS_comb_collect = SS_comb_collect
         # Assuming all the memory ports can work in parallel
         self.SS_comb = max(SS_comb_list)
-        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
-            i = 3
     ## Calculate the initial/final data loading/off-loading cycle by separating out
     # the first-time input operands' / the last-time output operand's data movement
     # on corresponding ports.
@@ -1005,8 +1001,6 @@ class CostModelEvaluation:
                         # skip for the inactive data movement
                         continue
                     if mem_op in ["I1", "I2"]:
-                        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",4),("B",8)]:
-                            i = 3
                         real_cycle = getattr(
                             self.real_data_trans_cycle_onloading[layer_op][mem_lv], mov_dir
                         )
@@ -1021,10 +1015,6 @@ class CostModelEvaluation:
                             ].data_precision,
                             mov_dir,
                         )
-#                        if mov_dir == "wr_in_by_high" and mem_lv == 0 and not port_is_shared_by_two_input_operands:
-#                            mem_bw = self.mem_w_bw_dict[mem_op][mem_lv]/self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0]
-#                        elif mov_dir == "rd_out_to_low" and mem_lv == 1 and not port_is_shared_by_two_input_operands:
-#                            mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]/self.accelerator.get_core(self.core_id).operational_array.dimension_sizes[0]
                         if mov_dir[:2] == "rd":
                             mem_bw = self.mem_r_bw_dict[mem_op][mem_lv]
                         else:
@@ -1082,8 +1072,6 @@ class CostModelEvaluation:
         self.data_loading_cc_per_op = data_loading_cc_per_op
         self.data_offloading_per_mem_inst = data_offloading_per_mem_inst
         self.data_offloading_per_op = data_offloading_cc_per_op
-        if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
-            i = 3
 
         # Combine ports' initial data-loading activities to get the data loading cycle amount
         data_loading_cc_pair_combined_per_op = {
@@ -1137,8 +1125,6 @@ class CostModelEvaluation:
                 + data_loading_individual_part[op1],
                 data_loading_half_shared_part[op2] + data_loading_individual_part[op2],
             )
-            if self.mapping_int.temporal_mapping.mapping_dic_origin["W"][0] == [("B",80),("B",256)]:
-                i = 3
             data_loading_cycle = min(possible1, possible2)
 
         self.data_loading_cc_pair_combined_per_op = data_loading_cc_pair_combined_per_op

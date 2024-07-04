@@ -1,0 +1,110 @@
+workload = {
+    1: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 4,
+        "K": 4,
+        "C": 4,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4)]
+    },
+    2: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 16,
+        "K": 16,
+        "C": 16,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4), ("C", 4), ("K", 4), ("B", 4)]
+    },
+    3: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 32,
+        "K": 32,
+        "C": 32,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4), ("C", 8), ("K", 8), ("B", 8)]
+    },
+    4: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 12,
+        "K": 24,
+        "C": 12,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4), ("C", 3), ("K", 6), ("B", 3)]
+    },
+    5: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 64,
+        "K": 64,
+        "C": 128,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4), ("C", 32), ("K", 16), ("B", 16)]
+    },
+    6: {  # fc
+    "operator_type": "Conv",
+    "equation": "O[b][k][oy][ox]+=W[k][c][fy][fx]*I[b][c][iy][ix]",
+    "dimension_relations": ["ix=1*ox+1*fx", "iy=1*oy+1*fy"],
+    "loop_dim_size": {
+        "B": 4,
+        "K": 8,
+        "C": 128,
+        "OY": 1,
+        "OX": 1,
+        "FY": 1,
+        "FX": 1,
+    },
+    "operand_precision": {"O": 16, "O_final": 8, "W": 8, "I": 8},
+    "operand_source": {"W": [], "I": []},
+    "constant_operands": ["W", "I"],
+    "temporal_ordering": [("B", 4), ("C", 32), ("K", 2)]
+    }
+}

@@ -1,7 +1,8 @@
 mapping = {
     "default": {
         "core_allocation": 1,
-        "spatial_mapping": {"D1": ("C", 2), "D2": ("K", 2)},
+        "spatial_mapping": {"D1": ("C", 4), "D2": ("K", 4)},
+
         "memory_operand_links": {"O": "O", "W": "I2", "I": "I1"},
     },
     "Add": {
